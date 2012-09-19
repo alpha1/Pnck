@@ -72,11 +72,14 @@ public function getInfoFromWordpress(){
     $str = file_get_contents($this->suc_original);
     if(strlen($str)>0){
         preg_match("/\<title\>(.*)\<\/title\>/",$str, $title);
-		$title = explode("|", $title[1]);
+		$title = str_replace("&laquo;", "|", $title[1]);
+		$title = explode("|", $title);
 		$this->suc_page_title = $title[0];
-		$this->suc_author = "TEST AUTHOR";
-		$this->suc_article_title = "TEST TITLE";
-		//$title = $this->suc_article_title;
+		preg_match("/\<span class=\"author vcard\"\>(.*)\<\/span\>/",$str, $author);
+		$this->suc_author = $author[0];
+		$content = explode('<div class="entry-content">', $str);
+		$articleContent = explode('<span id="more', $content[1]);
+		$this->suc_article_content = $articleContent[0];
     }
 }
 
@@ -86,7 +89,9 @@ $this->suc_final = trim($this->suc_final);
 $this->suc_page_title = trim($this->suc_page_title);
 $output = '<a href="'.$this->suc_final .'" target="_blank">'."\n".'<span class="title">'.$this->suc_page_title.'</span></a>'."\n By ".$this->suc_author;
 echo htmlentities($output);
-echo "\n";
+echo "<br>\n";
+echo htmlentities($this->suc_article_content);
+$output = '<a href="'.$this->suc_final .'" target="_blank">'."\n".'<span class="title">Read More</span></a>';
 echo htmlentities($this->generateShares());
 }
 
@@ -117,7 +122,7 @@ echo '</form>';
 
 public function generateShares(){
 $encodedLink = urlencode($this->suc_final);
-$title = $this->suc_article_title;
+$title = $this->suc_page_title;
 $facebook = '<a href="https://facebook.com/sharer.php?u='.$encodedLink.'" title="Share on Facebook"target="_blank"><img src="http://www.magazinexperts.com/conexec/email_images/facebook.png" border="0" alt="Share on Facebook" /></a>';
 $tweet =  urlencode($title .' '. $this->suc_final . ' via @constructionmag');
 $twitter = '<a href="http://twitter.com/?status='.$tweet.'" title="Share on Twitter"target="_blank"><img src="http://www.magazinexperts.com/conexec/email_images/twitter.png" border="0" alt="Twitter" /></a>';
